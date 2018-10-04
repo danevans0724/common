@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Common
+Bundle-SymbolicName: org.evansnet.common
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.evansnet.common.core.Activator
+Bundle-Vendor: evansnet
+Require-Bundle: org.eclipse.ui,
+  org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: org.evansnet.common
+Bundle-ActivationPolicy: lazy
