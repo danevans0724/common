@@ -3,5 +3,14 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/cglib-nodep-3.2.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/cglib-nodep-3.2.9-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/easymock-4.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/hamcrest-all-1.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/javassist-3.24.0-GA.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/objenesis-3.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/powermock-api-easymock-2.0.0-RC.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/PowerMockito/powermock-mockito-release-full-1.6.4-full.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pmidce0/Documents/TargetPlatforms/mockito-all-1.10.19.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

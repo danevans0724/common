@@ -6,7 +6,10 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.evansnet.common.core.Activator
 Bundle-Vendor: evansnet
 Require-Bundle: org.eclipse.ui,
-  org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.junit
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: org.evansnet.common
 Bundle-ActivationPolicy: lazy
+Export-Package: org.evansnet.common.configuration,
+ org.evansnet.common.security
