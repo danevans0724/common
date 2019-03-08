@@ -5,14 +5,14 @@ import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.FormAttachment;
 
 
@@ -25,11 +25,11 @@ import org.eclipse.swt.layout.FormAttachment;
  */
 public class VaultDialog extends Dialog {
 
-	protected Shell shlCredentials;
+	public static Logger javaLogger = Logger.getLogger(VaultDialog.class.getName());
+	protected Shell shell;
 	protected VaultComposite vaultComposite;
 	private char[] vaultPwd; 
 	
-	@SuppressWarnings("unused")
 	private SelectionListener credentialsDlgBtnListener;
 
 	/**
@@ -39,19 +39,21 @@ public class VaultDialog extends Dialog {
 	 */
 	public VaultDialog(Shell parent, int style) {
 		super(parent, style);
-		setText("Credentials Dialog");
+		shell = new Shell(parent, SWT.NONE);
+		createContents();
 	}
-
+	
 	/**
 	 * Open the dialog.
 	 * @return the result
 	 */
 	public Object open() {
-		createContents();
-		shlCredentials.open();
-		shlCredentials.layout();
+		javaLogger.logp(Level.INFO, VaultDialog.class.getName(), "open()",
+				"Opening vault dialog for log in.");
+		shell.open();
+		shell.layout();
 		Display display = getParent().getDisplay();
-		while (!shlCredentials.isDisposed()) {
+		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
 			}
@@ -63,20 +65,10 @@ public class VaultDialog extends Dialog {
 	 * Create contents of the dialog.
 	 */
 	private void createContents() {
-		shlCredentials = new Shell(getParent(), getStyle());
-		shlCredentials.setSize(329, 188);
-		shlCredentials.setText("Enter Vault Password");
-		shlCredentials.setLayout(new FormLayout());
-		vaultComposite = new VaultComposite(shlCredentials, SWT.NONE);
-		FormData fd_credentialsComposite = new FormData();
-		fd_credentialsComposite.top = new FormAttachment(0);
-		fd_credentialsComposite.bottom = new FormAttachment(0, 127);
-		fd_credentialsComposite.left = new FormAttachment(0);
-		fd_credentialsComposite.right = new FormAttachment(0, 323);
-		vaultComposite.setLayoutData(fd_credentialsComposite);
-		
-		credentialsDlgBtnListener = new SelectionListener() {
+		shell.setText("Enter Vault Password");
+		shell.setLayout(new FormLayout());
 
+		credentialsDlgBtnListener = new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				widgetDefaultSelected(e);				
@@ -84,15 +76,31 @@ public class VaultDialog extends Dialog {
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				Button theBtn = (Button)e.widget;
+				Button theBtn = (Button)e.getSource();
 				String whichBtn = (String) theBtn.getData();
 				if (whichBtn.equals("credentialBtnOk")) {
 					vaultPwd = vaultComposite.getResult();
+					if (vaultPwd.length == 0) return;
 				} else if (whichBtn.equals("credentialBtnCancel")) {
 					vaultPwd = null;
+					return;
 				}
-				shlCredentials.dispose();	// close the dialog with the return value = vaultPwd
-			}			
+				shell.dispose();	// close the dialog with the return value = vaultPwd				
+			}
 		};
+		vaultComposite = new VaultComposite(shell , SWT.NONE);		
+		vaultComposite.setBtnListener(credentialsDlgBtnListener);
+		FormData fd_credentialsComposite = new FormData();
+		fd_credentialsComposite.top = new FormAttachment(0);
+		fd_credentialsComposite.bottom = new FormAttachment(0, 127);
+		fd_credentialsComposite.left = new FormAttachment(0);
+		fd_credentialsComposite.right = new FormAttachment(0, 323);
+		vaultComposite.setLayoutData(fd_credentialsComposite);
+		shell.pack();
+		
+	}
+	
+	public SelectionListener getCredentialsDlgBtnListener() {
+		return credentialsDlgBtnListener;
 	}
 }

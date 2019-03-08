@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.evansnet.common.configuration.Global;
 
@@ -40,13 +40,12 @@ public final class CommonSec {
 	static boolean instanceExists = false;
 	private char[] firstPwd = {'B','B','v','1','0','l','e','t'};
 	private char[] newCred;
-	@SuppressWarnings("unused")
 	private char[] safeCred;	//Write this to the security.properties file. 
 	private int minLen = 8;		//Minimum password length
 	private boolean capsReqd = true;
 	private int minCaps = 1;	//Minimum uppercase characters in a password.
 	private boolean specCharReqd = true;
-	private int minSpecChar = 1;	//Minimum special non-digit, non-alphabetic characters in a password.
+	private int minSpecChar = 0;	//Minimum special non-digit, non-alphabetic characters in a password.
 	private boolean digitReqd = true;	//Numeric digit required in password.
 	private int minDigit = 1;		//Minimum numeric digits in a password. 
 	Global globalConfig;
@@ -65,7 +64,7 @@ public final class CommonSec {
 	}
 	
 	public CommonSec(String s) {
-		//Do nothing constructor for helping Junits
+		//Do nothing constructor for helping JUnit tests.
 	}
 	
 	private CommonSec() throws KeyStoreException {
@@ -148,19 +147,9 @@ public final class CommonSec {
 	 * @throws Exception 
 	 */
 	public char[] userLogin() throws Exception {
-		Properties prop = fetchSecurityProperties();
-		if (prop == null) {
-			throw new Exception("UserLogin failed. Unable to open the security properties file.");
-		}
 		char[] userPassword = openCredentialDialog();
 		if (isCredOk(userPassword)) {
-			//Get the encrypted password and check it against the one entered.
-			char[] storedUserPassword;
-			char[] safeUserPwd = prop.getProperty("userPassword").toCharArray();
-			storedUserPassword = unDisguise(safeUserPwd, fetchCert());
-			if (storedUserPassword.equals(userPassword)) {
-				return userPassword;
-			}
+			userAuthenticate(userPassword);
 		} else {
 			javaLogger.log(Level.SEVERE, "Invalid credential");
 			throw new InvalidCredentialsException("The credential you entered is not valid.");
@@ -169,7 +158,7 @@ public final class CommonSec {
 	}
 	
 	public void createUserLogin() {
-		
+		//TODO: write the "createUserLogin() method. This will set a new keystore credential for the user.
 	}
 	
 	private Properties fetchSecurityProperties() {
@@ -201,9 +190,9 @@ public final class CommonSec {
 	
 	public char[] openCredentialDialog() {
 		char[] theResults;
-		IWorkbenchWindow activeWindow =  PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		Shell activeWindow =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 		if (activeWindow != null) {
-			VaultDialog credentialDialog = new VaultDialog(activeWindow.getShell(), SWT.NONE);
+			VaultDialog credentialDialog = new VaultDialog(activeWindow, SWT.NONE);
 			theResults = (char[])credentialDialog.open();
 			return theResults;
 		} else {
@@ -315,7 +304,7 @@ public final class CommonSec {
 	public final char[] unDisguise(char[] p, Certificate c) throws Exception {
 		byte[] bPwd = toBytes(p);
 		PublicKey key = fetchKey(c);
-		KeyStore keystore = getKeystore();
+		KeyStore keystore = getKeystore();		//TODO: The causes a loop. replace w/call to vault.
 		if (isKeyEqual(key)) {
 			//Keys match so safe to encrypt here.
 			PrivateKey privKey = fetchPrivate(keystore);		//Fetch the private key from the keystore
@@ -330,6 +319,9 @@ public final class CommonSec {
 	}
 	
 	private final KeyStore getKeystore() throws Exception {
+		if (vault == null || !vault.isOpen()) {
+			userLogin();	//Open the vault if necessary. 
+		}
 		return vault.getKeystore(new FileInputStream(globalConfig.getConfigDir() + File.separator + KEYSTORE), fetchStorePw());
 	}
 	
@@ -368,6 +360,7 @@ public final class CommonSec {
 	
 	//Get the keystore password.
 	private final char[] fetchStorePw() throws IOException, KeyStoreException {
+		//TODO: Refactor fetchStorePw() to retrieve the current password. 
 		return firstPwd;
 	}
 

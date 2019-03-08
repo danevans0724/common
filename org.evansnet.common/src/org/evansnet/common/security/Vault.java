@@ -77,15 +77,17 @@ public final class Vault {
 	
 	public KeyStore getKeystore(FileInputStream f, char[] p) throws Exception {
 		if (authenticate(f,p)) {
+			setOpen(true);
 			return keystore;
 		}
+		lock();
 		return null;
 	}
 	
 	/**
 	 * Closes the vault and sets the object = null.
 	 */
-	public void lock() {
+	private void lock() {
 		keystore = null;
 		setOpen(false);
 		vault = null;

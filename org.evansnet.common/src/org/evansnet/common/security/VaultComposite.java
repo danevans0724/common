@@ -4,6 +4,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -12,7 +13,10 @@ public class VaultComposite extends Composite {
 	
 	private final String BTN_OK = "credentialBtnOk";
 	private final String BTN_CANCEL = "credentialBtnCancel";
+	private Button btnOk;
+	private Button btnCancel;
 	private Text txtPassword;
+	private SelectionListener buttonListener;
 
 	/**
 	 * Create the composite.
@@ -47,14 +51,14 @@ public class VaultComposite extends Composite {
 		new Label(this, SWT.NONE);
 		new Label(this, SWT.NONE);
 		
-		Button btnOk = new Button(this, SWT.CENTER);
+		btnOk = new Button(this, SWT.CENTER);
 		GridData gd_btnOk = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		gd_btnOk.widthHint = 120;
 		btnOk.setLayoutData(gd_btnOk);
 		btnOk.setText("OK");
 		btnOk.setData(BTN_OK);
 		
-		Button btnCancel = new Button(this, SWT.NONE);
+		btnCancel = new Button(this, SWT.NONE);
 		GridData gd_btnCancel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 		gd_btnCancel.widthHint = 120;
 		btnCancel.setLayoutData(gd_btnCancel);
@@ -62,6 +66,7 @@ public class VaultComposite extends Composite {
 		btnCancel.setData(BTN_CANCEL);
 		//Dummy label to provide spacing
 		new Label(this, SWT.NONE);
+		
 	}
 	
 	public char[] getResult() {
@@ -73,4 +78,10 @@ public class VaultComposite extends Composite {
 		// Disable the check that prevents subclassing of SWT components
 	}
 
+	public void setBtnListener(SelectionListener l) {
+		buttonListener = l;
+		btnOk.addSelectionListener(buttonListener);
+		btnCancel.addSelectionListener(buttonListener);
+	}
+	
 }
