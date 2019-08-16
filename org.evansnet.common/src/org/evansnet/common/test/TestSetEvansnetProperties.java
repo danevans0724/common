@@ -81,11 +81,8 @@ public class TestSetEvansnetProperties {
 			//Now read the properties from disk.
 			global.fetchProperties(theDefault);
 			assertTrue(global.getEvansnetProp().size() == 4);	
-			
-			return;
-		} catch (Exception e) {
-			fail("Exception was thrown during testGlobal(). Message is " + e.getMessage());
-			e.printStackTrace();
+			} catch (Exception e) {
+				fail("Exception was thrown during testGlobal(). Message is " + e.getMessage());
 		}
 	}
 
