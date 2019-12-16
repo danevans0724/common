@@ -14,7 +14,7 @@ public class InvalidCredentialsException extends Exception {
 
 	private static final long serialVersionUID = 1L;	//Stupid version thing...
 	private static final String THIS_CLASS_NAME = InvalidCredentialsException.class.getName();
-	public static Logger javaLogger = Logger.getLogger(THIS_CLASS_NAME);
+	Logger javaLogger = Logger.getLogger(THIS_CLASS_NAME);
 
 	public InvalidCredentialsException(String string) throws Exception {
 		javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, null, string);

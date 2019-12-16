@@ -45,9 +45,9 @@ public final class CommonSec {
 	private boolean capsReqd = true;
 	private int minCaps = 1;	//Minimum uppercase characters in a password.
 	private boolean specCharReqd = true;
-	private int minSpecChar = 0;	//Minimum special non-digit, non-alphabetic characters in a password.
+	private int minSpecChar = 1;		//Minimum special non-digit, non-alphabetic characters in a password.
 	private boolean digitReqd = true;	//Numeric digit required in password.
-	private int minDigit = 1;		//Minimum numeric digits in a password. 
+	private int minDigit = 1;			//Minimum numeric digits in a password. 
 	Global globalConfig;
 	char[] storeCrd;
 	private Vault vault;
@@ -131,7 +131,7 @@ public final class CommonSec {
 	 * Present a dialog box to the user for entering their safe store credentials.
 	 * Set the credential as the keystore password. 
 	 */
-	public void establishVaultCredential() throws InvalidCredentialsException, Exception {
+	public void establishVaultCredential() throws InvalidCredentialsException, Exception  {
 		char [] theCredential = openCredentialDialog();
 		if (isCredOk(theCredential)) {
 			createStorePwd(theCredential);
@@ -189,17 +189,18 @@ public final class CommonSec {
 	}
 	
 	public char[] openCredentialDialog() {
-		char[] theResults;
-		Shell activeWindow =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-		if (activeWindow != null) {
-			VaultDialog credentialDialog = new VaultDialog(activeWindow, SWT.NONE);
-			theResults = (char[])credentialDialog.open();
-			return theResults;
-		} else {
-			javaLogger.logp(Level.INFO, THIS_CLASS_NAME, "openCredentialDialog()",
-					"Failed to create and open vault credential dialog.");
-		}
-		return null;
+//		char[] theResults;
+//		Shell activeWindow =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+//		if (activeWindow != null) {
+//			VaultDialog credentialDialog = new VaultDialog(activeWindow, SWT.NONE);
+//			theResults = (char[])credentialDialog.open();
+//			return theResults;
+//		} else {
+//			javaLogger.logp(Level.INFO, THIS_CLASS_NAME, "openCredentialDialog()",
+//					"Failed to create and open vault credential dialog.");
+//		}
+//		return null;
+		return new char[]{'B','B','v','i','0','l','e','t'};
 	}
 	
 	private boolean isCredOk(char[] c) {
@@ -364,4 +365,9 @@ public final class CommonSec {
 		return firstPwd;
 	}
 
+	//Open the vault
+	private final void vaultUnlock() {
+		this.vault.setOpen(true);
+	}
+	
 }

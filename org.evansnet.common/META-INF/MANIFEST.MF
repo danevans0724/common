@@ -7,7 +7,8 @@ Bundle-Activator: org.evansnet.common.core.Activator
 Bundle-Vendor: evansnet
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.junit
+ org.junit,
+ org.eclipse.swt
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: org.evansnet.common
 Bundle-ActivationPolicy: lazy

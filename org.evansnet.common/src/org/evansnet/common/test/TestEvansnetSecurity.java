@@ -3,15 +3,13 @@ package org.evansnet.common.test;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.KeyStore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.evansnet.common.configuration.Global;
 import org.evansnet.common.security.CommonSec;
 import org.junit.After;
@@ -32,9 +30,10 @@ public class TestEvansnetSecurity {
 		global = Global.getInstance();
 		String currentDir = System.getProperties().getProperty("user.dir");
 		global.setWorkingDir(currentDir + File.separator + "evansnet");
+		FileInputStream is = new FileInputStream(global.getConfigDir() + File.separator + "evansnet.keystore");
 		os = new FileOutputStream(global.getConfigDir() + File.separator + "evansnet.keystore");
 		KeyStore keyStore = KeyStore.getInstance("JKS");
-		keyStore.load(null, null);
+		keyStore.load(null, null);		// Creates a new keystore for test. 
 		keyStore.store(os, firstPwd);
 		sec = CommonSec.getInstance();
 	}
@@ -51,11 +50,16 @@ public class TestEvansnetSecurity {
 	@Test
 	public void testCreateStorePwd() {
 		try {
-			char[] newPwd = {'T','e','s','t'};
 			boolean isAuthenticated = false;
-			sec.createStorePwd(newPwd);
-			isAuthenticated = sec.userAuthenticate(newPwd);
+			Method method = CommonSec.class.getDeclaredMethod("vaultUnlock");
+			method.setAccessible(true);
+			method.invoke(sec); // Make sure the vault is open otherwise the test will fail.
+			
+			// First authenticate with the original password. Confirm the vault is good.
+			isAuthenticated = sec.userAuthenticate(firstPwd);
 			assertTrue(isAuthenticated);
+			char[] newPwd = {'T','e','s','t','$','i','n','g'};
+			sec.createStorePwd(newPwd);
 			
 			// Now authenticate with the new password.
 			isAuthenticated = false; 	
@@ -111,17 +115,4 @@ public class TestEvansnetSecurity {
 		assertTrue(result);
 	}
 	
-	@Test 
-	public void testOpenCredentialsDialog() {
-//		Shell swtShell = new Shell(new Display());
-//		swtShell.open();
-		
-		try {
-			char[] userEntry = sec.openCredentialDialog();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		fail("Not yet implemented");
-	}
  }

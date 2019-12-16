@@ -27,16 +27,16 @@ import java.util.logging.Logger;
  */
 public class Global {
 	public static final String THIS_CLASS_NAME = Global.class.getName();
-	public Logger javaLogger = Logger.getLogger(THIS_CLASS_NAME);
+	public static final Logger javaLogger = Logger.getLogger(THIS_CLASS_NAME);
 	
 	private static final String CONFIG_FILE = "configuration.properties";
 	private static Global Global_instance = null;
 
-	private final String EVANSNET = "evansnet";
-	private final String CFG_FOLDER = "cfg";
-	private final String DATA_FOLDER = "data";
-	private final String DATA_SECURITY_FOLDER = "security";
-	private final String DATA_CERT = "credentials.cer";
+	private static final String EVANSNET = "evansnet";
+	private static final String CFG_FOLDER = "cfg";
+	private static final String DATA_FOLDER = "data";
+	private static final String DATA_SECURITY_FOLDER = "security";
+	private static final String DATA_CERT = "credentials.cer";
 	private Properties sysProp;
 	private String user;
 	private String userHome;
@@ -107,7 +107,7 @@ public class Global {
 	
 	public Properties getEvansnetProp() throws Exception {
 		// if the properties are empty, attempt to retrieve them from disk.
-		if (evansnetProp.isEmpty() || evansnetProp == null) {
+		if (evansnetProp.isEmpty()) {
 			evansnetProp = fetchProperties(configDir + File.separator + CONFIG_FILE);
 		}
 		return evansnetProp;
@@ -269,6 +269,5 @@ public class Global {
 		} else {
 			throw new FileNotFoundException("The user's home directory was not found. ");
 		} 
-//		fs.close();
 	}
 }

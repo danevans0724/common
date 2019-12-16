@@ -43,14 +43,14 @@ public final class Vault {
 			setOpen(true);
 			return true;
 		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
-			javaLogger.logp(Level.SEVERE, Vault.class.getName(), "authenticalte()",
+			javaLogger.logp(Level.SEVERE, Vault.class.getName(), "authenticate()",
 					"Authentication failed. ");
 			lock();		//If authentication failed, lock the vault.
 			return false;
 		}
 	}
 	
-	private void setOpen(boolean s) {
+	void setOpen(boolean s) {
 		isOpen = s;
 	}
 	
@@ -88,7 +88,6 @@ public final class Vault {
 	 * Closes the vault and sets the object = null.
 	 */
 	private void lock() {
-		keystore = null;
 		setOpen(false);
 		vault = null;
 		instance = false;
