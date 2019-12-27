@@ -8,6 +8,8 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.evansnet.common.configuration.Global;
 import org.junit.After;
@@ -15,6 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestSetEvansnetProperties {
+	
+	public static Logger javaLogger = Logger.getAnonymousLogger();
 	
 	String defaultFile;
 	String defaultPath;
@@ -43,7 +47,7 @@ public class TestSetEvansnetProperties {
 			}
 		} catch (Exception e) {
 			fail("Could not set up test file in user's directory. " + e.getMessage());
-			e.printStackTrace();
+			javaLogger.log(Level.SEVERE, e.getMessage());
 		}
 	}
 

@@ -2,6 +2,7 @@ package org.evansnet.common.security;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.Key;
@@ -22,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.evansnet.common.configuration.Global;
+import org.evansnet.common.util.LoggingHelper;
 
 
 
@@ -32,18 +34,17 @@ import org.evansnet.common.configuration.Global;
 public final class CommonSec {
 	
 	private static final String SECURITY_PROPERTIES = "security.properties";
-	private static final String KEYSTORE = "evansnet.keystore";
+	private static final String KEYSTORE = "credstore.keystore";
 	private static final String THIS_CLASS_NAME = CommonSec.class.getName();
 	public static Logger javaLogger = Logger.getLogger(THIS_CLASS_NAME);
-	public String thePath;
-	private final String pubCertFile = "evansnet.cer";		//The name of the public key cert file.
+	public LoggingHelper lh;
+	private final String pubCertFile = "credentials.cer";		//The name of the public key cert file.
 	static boolean instanceExists = false;
 	private char[] firstPwd = {'B','B','v','1','0','l','e','t'};
-	private char[] newCred;
-	private char[] safeCred;	//Write this to the security.properties file. 
-	private int minLen = 8;		//Minimum password length
-	private boolean capsReqd = true;
-	private int minCaps = 1;	//Minimum uppercase characters in a password.
+	private char[] safeCred;			//Write this to the security.properties file. 
+	private int minLen = 8;				//Minimum password length
+	private boolean capsReqd = true;	//Require upper case letters in the password.
+	private int minCaps = 1;			//Minimum upper case characters in a password.
 	private boolean specCharReqd = true;
 	private int minSpecChar = 1;		//Minimum special non-digit, non-alphabetic characters in a password.
 	private boolean digitReqd = true;	//Numeric digit required in password.
@@ -69,7 +70,6 @@ public final class CommonSec {
 	
 	private CommonSec() throws KeyStoreException {
 		globalConfig = Global.getInstance();
-		thePath = globalConfig.getConfigDir();
 		vault = Vault.getInstance();
 	}
 	
@@ -82,14 +82,15 @@ public final class CommonSec {
 			storeCrd = getOrigCred();
 		}			
 		try {
-				if (vault.authenticate(new FileInputStream(thePath + File.separator + KEYSTORE), storeCrd)) {
+				if (vault.authenticate(new FileInputStream(globalConfig.getDataSecurityDir() + File.separator + KEYSTORE), storeCrd)) {
 					storeCrd = p;
-					vault.store(new FileOutputStream(thePath + File.separator + KEYSTORE), storeCrd);	//Set the new one.
-					storeCred("storePassword", storeCrd);
+					vault.store(new FileOutputStream(globalConfig.getDataSecurityDir() + File.separator + KEYSTORE), storeCrd);	//Set the new one.
+					storeCred(storeCrd);
 				}
 			} catch (Exception e) {
 				javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, "createStorePwd()", 
 						"Failed to set vault password. " + e.getMessage());
+				LoggingHelper.printStackTrace(javaLogger, e.getStackTrace());
 			}
 	}
 	
@@ -106,7 +107,7 @@ public final class CommonSec {
 				vault = Vault.getInstance();
 			}
 			javaLogger.logp(Level.INFO, THIS_CLASS_NAME, "userAuthenticate()", "Got keystore instance.");
-			if (vault.authenticate(new FileInputStream(thePath + File.separator + KEYSTORE), p)) {
+			if (vault.authenticate(new FileInputStream(globalConfig.getDataSecurityDir() + File.separator + KEYSTORE), p)) {
 				javaLogger.log(Level.INFO, "Successfully got keystore");
 				return true;
 			} else {
@@ -116,6 +117,7 @@ public final class CommonSec {
 			String msg = "Error accessing vault. " + e.getMessage();
 			javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, "userAuthenticate()", 
 					"Error accessing vault. " + e.getMessage());
+			LoggingHelper.printStackTrace(javaLogger, e.getStackTrace());
 			throw new InvalidCredentialsException(e, msg);
 		}
 	}
@@ -135,7 +137,6 @@ public final class CommonSec {
 		char [] theCredential = openCredentialDialog();
 		if (isCredOk(theCredential)) {
 			createStorePwd(theCredential);
-			newCred = theCredential;
 		} else {
 			throw new InvalidCredentialsException("Invalid credential entered.");
 		}
@@ -164,11 +165,11 @@ public final class CommonSec {
 	private Properties fetchSecurityProperties() {
 		Properties prop = new Properties();
 		try {
-			prop.load(new FileInputStream(globalConfig.getDataSecurityDir() + File.separator + SECURITY_PROPERTIES));
+			prop.load(new FileInputStream(globalConfig.getConfigDir() + File.separator + SECURITY_PROPERTIES));
 			return prop;
 		} catch (IOException e) {
 			javaLogger.log(Level.SEVERE, "Unable to load security properties file." + e.getMessage());
-			e.printStackTrace();
+			LoggingHelper.printStackTrace(javaLogger, e.getStackTrace());
 		}
 		return null;
 	}
@@ -178,13 +179,23 @@ public final class CommonSec {
 	 * @return The store credential
 	 * @throws Exception 
 	 */
-	public PrivateKey getVaultPasswordFromFile() throws Exception {
-		Properties secProp = new Properties();
-		secProp.load(new FileInputStream(globalConfig.getConfigDir() + File.separator + SECURITY_PROPERTIES));
-		if (pub == null) {
-			pub = fetchCert();
+	public char[] getVaultPasswordFromFile() {
+		try (FileInputStream fis = new FileInputStream(globalConfig.getConfigDir() + File.separator + SECURITY_PROPERTIES)) {
+			byte[] cred = new byte[fis.available()];
+			if (pub == null) {
+				pub = fetchCert();
+			}
+			int bytesRead = fis.read(cred);
+			char[] thePwd = new char[bytesRead];
+			thePwd = toChar(cred);
+			return thePwd;
+		} catch (FileNotFoundException e) {
+			javaLogger.logp(Level.SEVERE, "getVaultPasswordFromFile()", THIS_CLASS_NAME, 
+					"File not found exception " + e.getMessage());
+			LoggingHelper.printStackTrace(javaLogger, e.getStackTrace());
+		} catch (IOException e) {
+			LoggingHelper.printStackTrace(javaLogger, e.getStackTrace());
 		}
-		
 		return null;
 	}
 	
@@ -242,19 +253,17 @@ public final class CommonSec {
 		return false;
 	}
 	
-	protected void storeCred(String key, char[] c) throws Exception, IOException {
+	protected void storeCred(char[] c) {
 		//Take the user credential, encrypt it with the public key and 
 		//write the encrypted credential to the security.properties file. 
-		Properties secProp = new Properties();
-		secProp.load(new FileInputStream(globalConfig.getConfigDir() + File.separator + SECURITY_PROPERTIES));
-		if (pub == null) {
-			pub = fetchCert();
-		}
-		safeCred = disguise(c,pub);
-		secProp.setProperty(key, safeCred.toString());
-		secProp.store(new FileOutputStream(globalConfig.getConfigDir() + File.separator + SECURITY_PROPERTIES), null);
-		if (key.equals("storePassword")) { 
-			storeCrd = c;
+		try (FileOutputStream bos = new FileOutputStream(globalConfig.getConfigDir() + File.separator + SECURITY_PROPERTIES)) {		
+			if (pub == null) {
+				pub = fetchCert();
+			}
+			safeCred = disguise(c,pub);
+			bos.write(toBytes(safeCred));
+		} catch (Exception e) {
+			LoggingHelper.printStackTrace(javaLogger, e.getStackTrace());
 		}
 	}
 	
@@ -297,7 +306,7 @@ public final class CommonSec {
 			KeyStore.PrivateKeyEntry privEntry = (KeyStore.PrivateKeyEntry)keystore.getEntry("credentials", prot);
 			return privEntry.getPrivateKey();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LoggingHelper.printStackTrace(javaLogger, e.getStackTrace());
 		}
 		return null;
 	}
@@ -305,7 +314,7 @@ public final class CommonSec {
 	public final char[] unDisguise(char[] p, Certificate c) throws Exception {
 		byte[] bPwd = toBytes(p);
 		PublicKey key = fetchKey(c);
-		KeyStore keystore = getKeystore();		//TODO: The causes a loop. replace w/call to vault.
+		KeyStore keystore = vault.getKeystore(new FileInputStream(globalConfig.getDataSecurityDir() + File.separator + KEYSTORE), fetchStorePw());
 		if (isKeyEqual(key)) {
 			//Keys match so safe to encrypt here.
 			PrivateKey privKey = fetchPrivate(keystore);		//Fetch the private key from the keystore
@@ -316,28 +325,19 @@ public final class CommonSec {
 			thePwd = toChar(decrypted);
 			return thePwd;
 		}
-		return null;
-	}
-	
-	private final KeyStore getKeystore() throws Exception {
-		if (vault == null || !vault.isOpen()) {
-			userLogin();	//Open the vault if necessary. 
-		}
-		return vault.getKeystore(new FileInputStream(globalConfig.getConfigDir() + File.separator + KEYSTORE), fetchStorePw());
+		return new char[0];
 	}
 	
 	//No javadoc because we don't want to expose the method that gets the key from the keystore
 	private final Certificate fetchCert() {
-		String certFile = globalConfig.getConfigDir() + File.separator + pubCertFile;
+		String certFile = globalConfig.getDataSecurityDir() + File.separator + pubCertFile;
 		try {
 			FileInputStream fis = new FileInputStream(certFile);
 			CertificateFactory factory = CertificateFactory.getInstance("X.509");
 			Certificate pubCert = factory.generateCertificate(fis);
-			certFile = null;
 			return pubCert;
 		} catch (Exception e) {
 			javaLogger.log(Level.SEVERE, "Failed to read certificate from file. Error; " + e.getMessage());
-			e.printStackTrace();
 		}
 		return null;
 	}

@@ -11,7 +11,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -30,11 +29,12 @@ public class Global {
 	public static final Logger javaLogger = Logger.getLogger(THIS_CLASS_NAME);
 	
 	private static final String CONFIG_FILE = "configuration.properties";
-	private static Global Global_instance = null;
+	private static Global GlobalInstance = null;
 
 	private static final String EVANSNET = "evansnet";
 	private static final String CFG_FOLDER = "cfg";
 	private static final String DATA_FOLDER = "data";
+	private static final String TEST_FOLDER = "TestObjects";
 	private static final String DATA_SECURITY_FOLDER = "security";
 	private static final String DATA_CERT = "credentials.cer";
 	private Properties sysProp;
@@ -44,14 +44,15 @@ public class Global {
 	private String configDir;
 	private String dataConnDir;
 	private String dataSecurityDir;
+	private String testObjectDir;
 	private Properties evansnetProp;
 	
 	//Singleton
 	public static Global getInstance() {
-		if (Global_instance == null) {
-			Global_instance = new Global();
+		if (GlobalInstance == null) {
+			GlobalInstance = new Global();
 		}
-		return Global_instance;
+		return GlobalInstance;
 	}
 	
 	private Global() {
@@ -62,9 +63,14 @@ public class Global {
 		setConfigFolder(workingDir + File.separator + CFG_FOLDER);
 		setDataConnDir(workingDir + File.separator + DATA_FOLDER);
 		setDataSecurityDir(dataConnDir + File.separator + DATA_SECURITY_FOLDER);
+		setTestObjectDir(workingDir + File.separator + TEST_FOLDER);
 		evansnetProp = new Properties();
 	}
 	
+	private void setTestObjectDir(String tod) {
+		testObjectDir = tod;
+	}
+
 	private void setDataConnDir(String d) {
 		dataConnDir = d;
 	}
@@ -79,6 +85,10 @@ public class Global {
 	
 	public String getDataCert() {
 		return dataSecurityDir + File.separator + DATA_CERT;
+	}
+	
+	public String getTestDir() {
+		return testObjectDir;
 	}
 
 	public String getUser() {
@@ -113,6 +123,10 @@ public class Global {
 		return evansnetProp;
 	}
 	
+	/**
+	 * Used to replace the default configuration properties. 
+	 * @param - a properties object populated with the values for replacement.
+	 */
 	public void setEvansnetProp(Properties replacement	) {
 		evansnetProp = replacement;
 	}
@@ -126,11 +140,12 @@ public class Global {
 	 * @throws IOException
 	 */
 	public Properties fetchProperties(String cfgPath) throws IOException {
+		String methodName = "fetchProperties()";
 		FileSystem fs = getFileSystem();
 
 		if (cfgPath == null || cfgPath.isEmpty()) {
 			//get from the default location
-			javaLogger.logp(Level.INFO, THIS_CLASS_NAME, "fetchProperties()", 
+			javaLogger.logp(Level.INFO, THIS_CLASS_NAME, methodName, 
 					"The configuration path submitted is null or empty. Using default path instead.");
 			cfgPath = configDir;
 		}
@@ -149,13 +164,12 @@ public class Global {
 			evansnetProp.load(new FileReader(theCfgPath.toString()));
 			return evansnetProp;
 			} catch (AccessDeniedException ade) {
-				javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, "fetchProperties()", 
+				javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, methodName, 
 						"Access denied to " + cfgPath + "\n" + ade.getMessage());
 				return null;
 			} catch (Exception e) {
-				javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, "fetchProperties()", 
-						"An exception was thrown while fetching configuration properties: " + e.getMessage() + "\n");
-				e.printStackTrace();
+				javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, methodName, 
+						"An unexpected exception was thrown while fetching configuration properties: " + e.getMessage() + "\n");
 				return null;
 		}
 	}
@@ -187,7 +201,8 @@ public class Global {
 						"Properties for evansnet products");
 			}
 		} catch (IOException eio) {
-			eio.printStackTrace();
+			javaLogger.log(Level.SEVERE, "IOException occurred while saving configuration " + 
+		eio.getMessage());
 		}
 	}
 
@@ -208,7 +223,7 @@ public class Global {
 	private boolean pathExists(String thePath, FileSystem fs) {
 		try {
 			Path cfgPath = fs.getPath(thePath);
-			if (Files.exists(cfgPath)) {
+			if (cfgPath.toFile().exists()) {
 				return true;
 			}
 		} catch (InvalidPathException ipe) {
@@ -229,13 +244,12 @@ public class Global {
 		FileSystem fs = getFileSystem();
 		try {
 			Path cfgPath = fs.getPath(thePath);
-			if (Files.exists(cfgPath, LinkOption.NOFOLLOW_LINKS)) {
+			if (cfgPath.toFile().exists()) {
 				return true;
 			}
 		} catch (Exception e) {
 			javaLogger.logp(Level.SEVERE, THIS_CLASS_NAME, "configFileExists()", 
 					"Configuration file could not be found. " + e.getMessage());
-			e.printStackTrace();
 		}
 		return false;
 	} 
