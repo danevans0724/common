@@ -337,7 +337,7 @@ public final class CommonSec {
 			Certificate pubCert = factory.generateCertificate(fis);
 			return pubCert;
 		} catch (Exception e) {
-			javaLogger.log(Level.SEVERE, "Failed to read certificate from file. Error; " + e.getMessage());
+			javaLogger.log(Level.SEVERE, "Failed to read certificate from file. Error; " + e.getCause());
 		}
 		return null;
 	}

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Common
-Bundle-SymbolicName: org.evansnet.common
+Bundle-SymbolicName: org.evansnet.model.common;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.evansnet.common.core.Activator
 Bundle-Vendor: evansnet
@@ -13,4 +13,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: org.evansnet.common
 Bundle-ActivationPolicy: lazy
 Export-Package: org.evansnet.common.configuration,
- org.evansnet.common.security
+ org.evansnet.common.core,
+ org.evansnet.common.security,
+ org.evansnet.common.util
