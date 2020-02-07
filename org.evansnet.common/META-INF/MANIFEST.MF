@@ -15,4 +15,5 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.evansnet.common.configuration,
  org.evansnet.common.core,
  org.evansnet.common.security,
+ org.evansnet.common.ui,
  org.evansnet.common.util
