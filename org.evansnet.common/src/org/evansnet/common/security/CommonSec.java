@@ -19,9 +19,6 @@ import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 import org.evansnet.common.configuration.Global;
 import org.evansnet.common.util.LoggingHelper;
 
